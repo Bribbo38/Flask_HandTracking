@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="../static/interactive.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        li {
+            float: left;
+        }
+
+        li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: .75rem;
+            text-decoration: none;
+        }
+
+        li a:hover:not(.active) {
+            background-color: #111;
+        }
+
+        .active {
+            background-color: #04AA6D;
+        }
+
+        .controls_container {
+            height: 100%;
+            float: right;
+            display: flex;
+            gap: 1.5rem;
+            margin-right: 2rem;
+        }
+
+        .controls_container button {
+            background-color: #111;
+            border: 2px solid black;
+            padding: .725rem;
+        }
+
+        .controls_container button:hover {
+            cursor: pointer;
+            box-shadow: rgba(50, 50, 93, 0.25) 0 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0 18px 36px -18px inset;
+        }
+
+        .controls_container button:disabled {
+            cursor: default;
+            border-color: gray !important;
+            color: gray !important;
+        }
+
+        .video_container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #input_video {
+            z-index: 1;
+            position: absolute;
+            top: 3.5rem;
+            left: 1rem;
+            width: 20%;
+            border: 2px solid black;
+        }
+
+        video {
+            transform: scaleX(-1);
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav>
+    <ul>
+        <li><a href="/">Display</a></li>
+        <li><a class="active" href="/interactive">Interact</a></li>
+        <li class="controls_container">
+            <button id="start_capture" style="color: green; border-color: green">Start</button>
+            <button id="stop_capture" style="color: darkred; border-color: darkred">Stop</button>
+        </li>
+    </ul>
+</nav>
+
+<main>
+    <div class="video_container">
+        <video id="input_video" autoplay playsinline></video>
+    </div>
+</main>
+</body>
+</html>
