@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let stream;
     let x, y;
     let boxSize = 20;
-    const speed = 10;
+    let speed = 10;
     let record = [];
 
     const videoInput = document.getElementById('input_video');
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function startRecording() {
         record = [] // Pulisci memoria
-        record.push([x, y]) // Save start coordinates
+        record.push({x: x, y: y}) // Save start coordinates
         isRecording = true;
         startRecordingButton.disabled = true;
         stopRecordingButton.disabled = false;
@@ -195,11 +195,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         startCaptureButton.disabled = true;
         playbackButton.disabled = true;
 
-        x = record[0][0];
-        y = record[0][1];
+        x = record[0].x;
+        y = record[0].y;
 
         for (const i of record.slice(1)) { // from the second position
-            await sleep(500);
+            await sleep(100);
             moveCube(i);
         }
 
