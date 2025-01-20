@@ -29,12 +29,7 @@ with (mp_hands.Hands(max_num_hands=1, model_complexity=1, min_detection_confiden
             for hand_landmarks in results.multi_hand_landmarks:
                 hand = Hand(hand_landmarks)
 
-                if hand.is_fist():
-                    print("Pugno")
-                elif hand.is_open():
-                    print("Aperta")
-                else:
-                    print("NONE")
+                print(hand.get_state())
 
                 # print(hand_landmarks)
 

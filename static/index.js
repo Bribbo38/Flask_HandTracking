@@ -53,24 +53,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const data = await sendImageToBackend(base64Image);
 
-        if (isCapturing) {
-            if (data?.annotated_image) {
-                const img = new Image();
-                img.onload = () => {
-                    const ctx = canvasOutput.getContext('2d');
-                    canvasOutput.width = videoInput.videoWidth;
-                    canvasOutput.height = videoInput.videoHeight;
-                    ctx.drawImage(img, 0, 0, canvasOutput.width, canvasOutput.height);
-                };
-                img.src = data.annotated_image;
-            }
-
-            if (data?.hand_state) {
-                stateOutput.innerHTML = `State: ${data.hand_state}`;
-            }
+        if (data?.annotated_image && isCapturing) {
+            const img = new Image();
+            img.onload = () => {
+                const ctx = canvasOutput.getContext('2d');
+                canvasOutput.width = videoInput.videoWidth;
+                canvasOutput.height = videoInput.videoHeight;
+                ctx.drawImage(img, 0, 0, canvasOutput.width, canvasOutput.height);
+            };
+            img.src = data.annotated_image;
         }
 
-        requestAnimationFrame(captureLoop);
+        if (data?.hand_state) {
+            stateOutput.innerHTML = `State: ${data.hand_state}`;
+        }
+
+
+        if (!isCapturing) {
+            let context = canvasOutput.getContext('2d');
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Pulisci canvas
+        } else {
+            requestAnimationFrame(captureLoop);
+        }
     }
 
     function captureFrame(videoElement) {
