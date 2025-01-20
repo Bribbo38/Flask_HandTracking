@@ -1,12 +1,25 @@
 document.addEventListener('DOMContentLoaded', async () => {
     let isCapturing = false;
+    let isRecording = false;
     let stream;
+    let x, y;
+    let boxSize = 20;
+    const speed = 10;
+    let record = [];
 
     const videoInput = document.getElementById('input_video');
-    const canvasOutput = document.getElementById('output_canvas');
+    const output = document.getElementById('display');
     const stateOutput = document.getElementById("output_state");
     const startCaptureButton = document.getElementById('start_capture');
     const stopCaptureButton = document.getElementById('stop_capture');
+
+    const startRecordingButton = document.getElementById('start_recording');
+    const stopRecordingButton = document.getElementById('stop_recording');
+    const playbackButton = document.getElementById('playback');
+
+    output.width = window.innerWidth;
+    output.height = window.innerHeight;
+    const ctx = output.getContext('2d');
 
     async function startCapture() {
         isCapturing = true;
@@ -22,7 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             startCaptureButton.disabled = true;
             stopCaptureButton.disabled = false;
+            startRecordingButton.disabled = false;
 
+            window.scrollTo(0, document.body.scrollHeight);
             videoInput.addEventListener('loadedmetadata', () => captureLoop());
         } catch (error) {
             console.error('Error accessing webcam:', error);
@@ -35,11 +50,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             stream.getTracks().forEach(track => track.stop()); // Ferma lo stream
         }
 
-        let context = canvasOutput.getContext('2d');
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Pulisci canvas
+        clearScreen();
 
         startCaptureButton.disabled = false;
         stopCaptureButton.disabled = true;
+        stopRecording();
+        startRecordingButton.disabled = true;
+    }
+
+    function startRecording() {
+        record = [] // Pulisci memoria
+        record.push([x, y]) // Save start coordinates
+        isRecording = true;
+        startRecordingButton.disabled = true;
+        stopRecordingButton.disabled = false;
+        playbackButton.disabled = true;
+    }
+
+    function stopRecording() {
+        isRecording = false;
+        startRecordingButton.disabled = false;
+        stopRecordingButton.disabled = true;
+
+        if (record.length > 0)
+            playbackButton.disabled = false;
+
+        boxSize = 20;
     }
 
     async function captureLoop() {
@@ -53,24 +89,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const data = await sendImageToBackend(base64Image);
 
-        if (isCapturing) {
-            if (data?.annotated_image) {
-                const img = new Image();
-                img.onload = () => {
-                    const ctx = canvasOutput.getContext('2d');
-                    canvasOutput.width = videoInput.videoWidth;
-                    canvasOutput.height = videoInput.videoHeight;
-                    ctx.drawImage(img, 0, 0, canvasOutput.width, canvasOutput.height);
-                };
-                img.src = data.annotated_image;
-            }
-
-            if (data?.hand_state) {
-                stateOutput.innerHTML = `State: ${data.hand_state}`;
-            }
+        if (data?.hand_state) {
+            stateOutput.innerHTML = `State: ${data.hand_state}`;
+            moveCube(data.hand_state);
         }
 
-        requestAnimationFrame(captureLoop);
+
+        if (!isCapturing) {
+            clearScreen();
+        } else {
+            requestAnimationFrame(captureLoop);
+        }
     }
 
     function captureFrame(videoElement) {
@@ -82,8 +111,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const offscreenCanvas = document.createElement('canvas');
         offscreenCanvas.width = videoElement.videoWidth;
         offscreenCanvas.height = videoElement.videoHeight;
-        const ctx = offscreenCanvas.getContext('2d');
-        ctx.drawImage(videoElement, 0, 0);
+        const ctxOff = offscreenCanvas.getContext('2d');
+        ctxOff.drawImage(videoElement, 0, 0);
         return offscreenCanvas.toDataURL('image/jpeg');
     }
 
@@ -111,7 +140,88 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function clearScreen() {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        x = ctx.canvas.width / 2 - boxSize;
+        y = ctx.canvas.height / 2 - boxSize;
+
+        drawCube();
+    }
+
+    function drawCube() {
+        ctx.fillStyle = '#333';
+        ctx.fillRect(x, y, boxSize, boxSize);
+    }
+
+    function moveCube(state) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        switch (state) {
+            case 'thumbs_up':
+                if (y > 0) y -= speed;
+                break;
+
+            case 'thumbs_down':
+                if (y < output.height - boxSize) y += speed;
+                break;
+
+            case 'pointing_left':
+                if (x > 0) x -= speed;
+                break;
+
+            case 'pointing_right':
+                if (x < output.width - boxSize) x += speed;
+                break;
+
+            case 'open':
+                if (boxSize < 100) boxSize += speed;
+                break;
+
+            case 'closed':
+                if (boxSize > 10) boxSize -= speed;
+                break;
+        }
+
+        if (isRecording) {
+            record.push(state);
+        }
+
+        drawCube();
+    }
+
+    async function playback() {
+        stopCapture()
+        startCaptureButton.disabled = true;
+        playbackButton.disabled = true;
+
+        x = record[0][0];
+        y = record[0][1];
+
+        for (const i of record.slice(1)) { // from the second position
+            await sleep(500);
+            moveCube(i);
+        }
+
+        playbackButton.disabled = false;
+        startCaptureButton.disabled = false;
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     startCaptureButton.addEventListener('click', startCapture);
     stopCaptureButton.addEventListener('click', stopCapture);
+    startRecordingButton.addEventListener('click', startRecording);
+    stopRecordingButton.addEventListener('click', stopRecording);
+
+    playbackButton.addEventListener('click', playback);
+
     stopCaptureButton.disabled = true;
+    startRecordingButton.disabled = true;
+    stopRecordingButton.disabled = true;
+    playbackButton.disabled = true;
+
+    clearScreen();
 });

@@ -21,6 +21,18 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100%;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         li {
@@ -43,26 +55,30 @@
             background-color: #04AA6D;
         }
 
-        .controls_container {
+        .center_container {
             height: 100%;
-            float: right;
-            display: flex;
-            gap: 1.5rem;
-            margin-right: 2rem;
+            width: fit-content;
+            margin: 0 auto;
         }
 
-        .controls_container button {
+        .right_container {
+            height: 100%;
+            float: right;
+            margin-right: 1rem;
+        }
+
+        .right_container button, .center_container button {
             background-color: #111;
             border: 2px solid black;
             padding: .725rem;
         }
 
-        .controls_container button:hover {
+        .right_container button:hover, .center_container button:hover {
             cursor: pointer;
             box-shadow: rgba(50, 50, 93, 0.25) 0 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0 18px 36px -18px inset;
         }
 
-        .controls_container button:disabled {
+        .right_container button:disabled, .center_container button:disabled {
             cursor: default;
             border-color: gray !important;
             color: gray !important;
@@ -83,16 +99,21 @@
             border: 2px solid black;
         }
 
+        #output_state {
+            z-index: 2;
+            position: absolute;
+            top: 4rem;
+            left: 10rem;
+            text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff,
+            1px 1px #fff, -1px -1px #fff, 1px -1px #fff, -1px 1px #fff;
+        }
+
         video {
             transform: scaleX(-1);
         }
 
-        ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #333;
+        #display{
+            max-width: 100%;
         }
     </style>
 </head>
@@ -101,9 +122,14 @@
 
 <nav>
     <ul>
-        <li><a href="/">Display</a></li>
+        <li style="margin-left: 1rem"><a href="/">Display</a></li>
         <li><a class="active" href="/interactive">Interact</a></li>
-        <li class="controls_container">
+        <li class="center_container">
+            <button id="start_recording" style="color: orange; border-color: darkorange">REC</button>
+            <button id="stop_recording" style="color: red; border-color: darkred">STOP</button>
+            <button id="playback" style="color: green; border-color: green;">Playback</button>
+        </li>
+        <li class="right_container">
             <button id="start_capture" style="color: green; border-color: green">Start</button>
             <button id="stop_capture" style="color: darkred; border-color: darkred">Stop</button>
         </li>
@@ -112,8 +138,10 @@
 
 <main>
     <div class="video_container">
+        <h5 id="output_state">State: unknown</h5>
         <video id="input_video" autoplay playsinline></video>
     </div>
+    <canvas id="display"></canvas>
 </main>
 </body>
 </html>

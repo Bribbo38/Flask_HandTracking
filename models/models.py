@@ -71,7 +71,8 @@ class Hand:
             finger.is_bent(bent_threshold) and finger.is_close_to_origin(self.palm, origin_threshold, z_threshold)
             for finger in self.fingers
         )
-        thumb_close_to_index = self.thumb.is_close_to_origin(self.index.tip, origin_threshold=0.15, z_threshold=z_threshold)
+        thumb_close_to_index = self.thumb.is_close_to_origin(self.index.tip, origin_threshold=0.15,
+                                                             z_threshold=z_threshold)
         return all_fingers_closed and thumb_close_to_index
 
     def is_open(self, bent_threshold=0.1, spread_threshold=0.15):
@@ -89,8 +90,8 @@ class Hand:
         """Verifica se il pollice è alzato verso l'alto e le altre dita sono piegate."""
         thumb_up = self.thumb.tip.y < self.thumb.origin.y  # Pollice sopra rispetto al palmo
         return (
-            thumb_up and
-            all(finger.is_bent() for finger in self.fingers)
+                thumb_up and
+                all(finger.is_bent() for finger in self.fingers)
         )
 
     def is_thumbs_down(self):
@@ -101,17 +102,6 @@ class Hand:
                 all(finger.is_bent() for finger in self.fingers)
         )
 
-    def is_pointing(self, bent_threshold=0.1, spread_threshold=0.2):
-        """Verifica se solo l'indice è esteso (e tutte le altre dita sono piegate)."""
-        # Verifica che l'indice sia esteso
-        index_extended = not self.index.is_bent(bent_threshold) and not self.index.is_close_to_origin(self.palm, spread_threshold)
-
-        # Verifica che tutte le altre dita siano piegate e vicine al palmo
-        other_fingers_bent = all(finger.is_bent(bent_threshold) for finger in [self.thumb, self.middle, self.ring, self.pinky])
-
-        # Restituisce True se l'indice è esteso e tutte le altre dita sono piegate
-        return index_extended and other_fingers_bent
-
     def is_zooming(self, threshold=0.3):
         """Verifica se il pollice e il mignolo sono molto distanti (zoom)."""
         # Calcola la distanza tra il pollice e il mignolo
@@ -121,6 +111,36 @@ class Hand:
 
         # Stabilisci una soglia per considerare il gesto come zoom
         return hand_span > threshold
+
+    def is_pointing_right(self, bent_threshold=0.1, spread_threshold=0.2):
+        """Verifica se l'indice è esteso e puntato a destra."""
+        # Verifica che l'indice sia esteso
+        index_extended = not self.index.is_bent(bent_threshold) and not self.index.is_close_to_origin(self.palm,
+                                                                                                      spread_threshold)
+
+        # Verifica che tutte le altre dita siano piegate
+        other_fingers_bent = all(
+            finger.is_bent(bent_threshold) for finger in [self.thumb, self.middle, self.ring, self.pinky])
+
+        # Controlla la direzione: indice puntato a destra rispetto al palmo (specchiato)
+        pointing_right = self.index.tip.x < self.palm.x
+
+        return index_extended and other_fingers_bent and pointing_right
+
+    def is_pointing_left(self, bent_threshold=0.1, spread_threshold=0.2):
+        """Verifica se l'indice è esteso e puntato a sinistra."""
+        # Verifica che l'indice sia esteso
+        index_extended = not self.index.is_bent(bent_threshold) and not self.index.is_close_to_origin(self.palm,
+                                                                                                      spread_threshold)
+
+        # Verifica che tutte le altre dita siano piegate
+        other_fingers_bent = all(
+            finger.is_bent(bent_threshold) for finger in [self.thumb, self.middle, self.ring, self.pinky])
+
+        # Controlla la direzione: indice puntato a sinistra rispetto al palmo (specchiato)
+        pointing_left = self.index.tip.x > self.palm.x
+
+        return index_extended and other_fingers_bent and pointing_left
 
     def debug_hand_state(self):
         """Stampa lo stato della mano per il debugging."""
@@ -138,8 +158,10 @@ class Hand:
             return 'thumbs_up'
         elif self.is_thumbs_down():
             return 'thumbs_down'
-        elif self.is_pointing():
-            return 'pointing'
+        elif self.is_pointing_right():
+            return 'pointing_right'
+        elif self.is_pointing_left():
+            return 'pointing_left'
         elif self.is_zooming():
             return 'zooming'
         else:

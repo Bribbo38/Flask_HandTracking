@@ -9,7 +9,8 @@ Here is a list of all the gesture that can be recognised:
 - `thumbs_up`: the *like* sign, where you make a fist with your thumb up
 - `thumbs_down`: the *dislike* sign, the opposite direction as the `thumbs_up`
 - `zooming`: (works best in vertical position), where you stick out your pinky and thumb
-- `pointing`: (not very precise), where you stick out your index and point
+- `pointing_right`: (not very precise), where you stick out your index and point on the right
+- `pointing_left`: like the `pointing_right` but for the left side
 
 # How to run
 ## Standalone
